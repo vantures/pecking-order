@@ -218,6 +218,7 @@ button:hover { background: #385b9b; }
 #landingImage {
   display: block;
   margin: 0.5rem auto 1rem;
-  width: min(90vw, 320px);
+  width: min(90vw, 300px);
+  max-width: 100%;
   height: auto;
 } 
