@@ -58,12 +58,15 @@ button {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
-  background: #4c7ac4;
+  background: #f6a821;   /* orangish-yellow */
   color: #fff;
   cursor: pointer;
   font-weight: 600;
+  transition: background 0.2s ease;
 }
-button:hover { background: #385b9b; }
+button:hover {
+  background: #d98c12;   /* slightly darker on hover */
+}
 
 .hidden { display: none; }
 
