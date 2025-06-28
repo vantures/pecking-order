@@ -10,6 +10,10 @@ const birdImages = [
   'assets/birds/common_raven.png',
   'assets/birds/franklins_gull.png',
   'assets/birds/killdeer.png',
+  'assets/birds/annas_hummingbird.png',
+  'assets/birds/painted_bunting.png',
+  'assets/birds/bald_eagle.png',
+  'assets/birds/trumpeter_swan.png',
 ];
 
 // ───────────────────────────────────────────────────────────
