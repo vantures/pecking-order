@@ -167,12 +167,13 @@ button:hover { background: #385b9b; }
   text-align: center;
   margin: 0.5rem auto;
   color: #fff;
-  background: rgba(0,0,0,0.6);
-  padding: 0.4rem 0.8rem;
+  background: rgba(0,0,0,0.45); /* lighter overlay */
+  padding: 0.35rem 0.7rem;
   border-radius: 4px;
   font-weight: 600;
-  width: 90vw;
-  max-width: 350px;
+  width: auto;               /* shrink to content */
+  max-width: 260px;          /* cap for large phones */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 @media (orientation: portrait) and (max-width: 768px) {
   #landscapeNote {
