@@ -25,6 +25,7 @@ const form      = document.getElementById('setup');
 const track     = document.getElementById('track');
 const startBtn  = document.querySelector('#setup button[type="submit"], #start');
 const title     = document.getElementById('title');
+const fullBtn   = document.getElementById('fullscreenBtn');
 
 // Start with five player input boxes
 for (let i = 0; i < MAX_PLAYERS; i++) addInput();
@@ -32,6 +33,25 @@ for (let i = 0; i < MAX_PLAYERS; i++) addInput();
 if (startBtn) startBtn.onclick = startRace;
 
 if(title) title.onclick = () => location.reload();
+
+// Show fullscreen prompt button on mobile portrait
+function updateFsBtnVisibility(){
+  if(!fullBtn) return;
+  const shouldShow = isMobile() && window.matchMedia('(orientation: portrait)').matches;
+  fullBtn.classList.toggle('hidden', !shouldShow);
+}
+
+if(fullBtn){
+  fullBtn.onclick = async ()=>{
+     await attemptFullscreen();
+     updateFsBtnVisibility();
+  };
+  // initial check
+  updateFsBtnVisibility();
+  // update on orientation change or resize
+  window.addEventListener('orientationchange', updateFsBtnVisibility);
+  window.addEventListener('resize', updateFsBtnVisibility);
+}
 
 function addInput() {
   if (inputsDiv.children.length >= MAX_PLAYERS) return;
@@ -412,4 +432,47 @@ function showResults(order){
    });
    list.classList.remove('hidden');
    gsap.to(list,{opacity:1,duration:1, delay:0.2});
+}
+
+// Helper: true = phone/tablet
+function isMobile() {
+  return (/Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i).test(
+           navigator.userAgent) ||
+         window.matchMedia('(pointer:coarse)').matches;
+}
+
+// Attempt to enter fullscreen mode (mobile only) and lock to landscape
+async function attemptFullscreen(){
+  if(!isMobile()) return; // desktop → skip
+
+  const elem = document.documentElement;
+
+  // Helper to request orientation lock if supported
+  const lockLandscape = async () => {
+    if(screen.orientation && screen.orientation.lock){
+       try {
+          await screen.orientation.lock('landscape-primary');
+       } catch(errPrimary){
+          try { await screen.orientation.lock('landscape'); } catch(_err){ /* ignore */ }
+       }
+    }
+  };
+
+  // If already fullscreen, just try orientation lock
+  if(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement){
+      await lockLandscape();
+      return;
+  }
+
+  // Request fullscreen with vendor fallbacks
+  const req = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen;
+  if(!req) { await lockLandscape(); return; }
+
+  try {
+    const result = req.call(elem);
+    await Promise.resolve(result).catch(()=>{});
+  } catch(_){}
+
+  // After (attempted) fullscreen, try orientation lock
+  await lockLandscape();
 } 
