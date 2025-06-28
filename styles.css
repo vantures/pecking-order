@@ -85,7 +85,7 @@ button:hover { background: #385b9b; }
 .bird-wrapper .label {
   display: block;
   font-size: 1.2rem;
-  font-weight: 400;
+  font-weight: 700;
   color: #fff;
   text-shadow: 0 2px 4px rgba(0,0,0,0.6);
   position: absolute;
