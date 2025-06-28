@@ -198,6 +198,8 @@ function startRace(e) {
           if (!winnerDeclared) {
             winnerDeclared = true;
             announceWinner(r);
+          } else {
+            dropDead(r);
           }
           // When all birds finished, show results after short delay
           if(finishOrder.length === racers.length){
@@ -222,6 +224,9 @@ function announceWinner(racer) {
 
   // Feather & egg explosion
   spawnParticles();
+
+  // Mark winner flag
+  racer.winner = true;
 
   // Hide the label so only the bird flies to center
   const labelEl = racer.el.querySelector('.label');
@@ -326,6 +331,35 @@ function scheduleLoop(racer){
        tl.to(el, {y:`+=${loopHeight}`, duration:0.6, ease:"power2.in"});
 
        tl.to(img, {rotation:"-=360", duration:1.2, ease:"power2.inOut"}, 0);
+  });
+}
+
+//────────────────────────────
+// Loser bird drop animation
+//────────────────────────────
+function dropDead(racer){
+  if(racer.deadHandled) return;
+  racer.deadHandled = true;
+
+  // Halt existing animations
+  if(racer.el._tween) racer.el._tween.pause();
+  if(racer.el._sine)  racer.el._sine.pause();
+  gsap.killTweensOf(racer.el);
+
+  const img = racer.img;
+  if(img) {
+     // rotate 180° counter-clockwise
+     gsap.to(img,{rotation:"-=180", duration:0.4, ease:"power1.in"});
+  }
+
+  // drop to bottom
+  const rect = racer.el.getBoundingClientRect();
+  const distance = window.innerHeight - rect.bottom + 20; // little extra off-screen
+  gsap.to(racer.el, {
+    y: `+=${distance}`,
+    duration: 1,
+    ease: "power2.in",
+    onComplete: ()=>{ gsap.killTweensOf(racer.el); }
   });
 }
 
