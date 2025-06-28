@@ -20,11 +20,14 @@ const addBtn    = document.getElementById('add');
 const form      = document.getElementById('setup');
 const track     = document.getElementById('track');
 const startBtn  = document.querySelector('#setup button[type="submit"], #start');
+const title     = document.getElementById('title');
 
 // Start with five player input boxes
 for (let i = 0; i < MAX_PLAYERS; i++) addInput();
 
 if (startBtn) startBtn.onclick = startRace;
+
+if(title) title.onclick = () => location.reload();
 
 function addInput() {
   if (inputsDiv.children.length >= MAX_PLAYERS) return;
@@ -86,7 +89,7 @@ function startRace(e) {
 
     track.appendChild(wrapper);
 
-    racers.push({ el: wrapper, name });
+    racers.push({ el: wrapper, name, finished:false });
 
     const baseDuration = 11; // baseline seconds
     const speedFactor  = gsap.utils.random(0.9, 1.1); // narrower variance
@@ -147,13 +150,21 @@ function startRace(e) {
   const FINISH_OFFSET = 30; // px from right edge considered finish
   if (!window._peckingFinishTicker) {
     window._peckingFinishTicker = gsap.ticker.add(() => {
-      if (winnerDeclared) return;
+      if (!raceStarted) return;
       for (const r of racers) {
+        if(r.finished) continue;
         const rect = r.el.getBoundingClientRect();
         if (rect.right >= window.innerWidth - FINISH_OFFSET) {
-          winnerDeclared = true;
-          announceWinner(r);
-          break;
+          r.finished=true;
+          finishOrder.push(r.name);
+          if (!winnerDeclared) {
+            winnerDeclared = true;
+            announceWinner(r);
+          }
+          // When all birds finished, show results after short delay
+          if(finishOrder.length === racers.length){
+            gsap.delayedCall(1, ()=>showResults(finishOrder));
+          }
         }
       }
     });
@@ -177,8 +188,7 @@ function announceWinner(racer) {
   // Move winning bird beneath announcement
   bringWinnerBird(racer.el);
 
-  // Optionally hide the heading to declutter
-  document.querySelector('h1').classList.add('hidden');
+  // Keep header visible for new races
 }
 
 function bringWinnerBird(el){
@@ -251,4 +261,20 @@ function maybeAdjustSpeed(tween){
         gsap.to(tween,{ timeScale:newScale, duration:1.5, ease:"sine.inOut" });
      });
   }
+}
+
+//────────────────────────────
+// Results overlay
+//────────────────────────────
+function showResults(order){
+   const list = document.getElementById('resultsCenter');
+   if(!list) return;
+   list.innerHTML='';
+   order.forEach((n,i)=>{
+      const li=document.createElement('li');
+      li.textContent=`${i+1}. ${n}`;
+      list.appendChild(li);
+   });
+   list.classList.remove('hidden');
+   gsap.to(list,{opacity:1,duration:1, delay:0.2});
 } 

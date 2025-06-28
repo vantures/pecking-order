@@ -8,7 +8,7 @@
   <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
 </head>
 <body>
-  <h1>Pecking Order</h1>
+  <h1 id="title" style="cursor:pointer">Pecking Order</h1>
 
   <form id="setup">
     <div id="inputs"></div>
@@ -22,6 +22,7 @@
   <!-- Winner overlay -->
   <div id="winnerOverlay" class="hidden">
     <h2 id="winnerText"></h2>
+    <ol id="resultsCenter" class="hidden"></ol>
   </div>
 
   <!-- Countdown overlay -->
@@ -29,8 +30,8 @@
     <h2 id="countdownText"></h2>
   </div>
 
-  <!-- Small results display -->
-  <div id="resultsSmall" class="hidden">
+  <!-- Small results list -->
+  <div id="resultsSmall" class="hidden" style="opacity:0;">
     <ol id="resultsList"></ol>
   </div>
 
