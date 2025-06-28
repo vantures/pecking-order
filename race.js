@@ -46,8 +46,8 @@ function startRace(e) {
 
   // Collect trimmed non-empty names
   const names = [...inputsDiv.querySelectorAll('input')]
-    .map((i) => i.value.trim())
-    .filter((v) => v.length);
+      .map(inp => inp.value.trim())
+      .filter(v => v.length);
 
   if (!names.length) return;
 
@@ -92,16 +92,18 @@ function startRace(e) {
     img.style.width = `${imgWidth}px`;
     wrapper.appendChild(img);
 
-    track.appendChild(wrapper);
+    // Enable 3D flip effect
+    wrapper.style.perspective = '800px';
+    img.style.backfaceVisibility = 'hidden';
 
-    racers.push({ el: wrapper, name, finished:false });
-
-    const baseDuration = 11; // baseline seconds
-    const speedFactor  = gsap.utils.random(0.9, 1.1); // narrower variance
+    // Baseline flight duration with a bit more variability
+    const baseDuration = 11;
+    const speedFactor  = gsap.utils.random(0.85, 1.2);
     const duration     = baseDuration * speedFactor;
 
-    const isFlippy  = false; // disabled
-    const isSwooper = true;
+    // Flight styles
+    const isCrazy   = Math.random() < 0.1;   // ~10% chance
+    const isSwooper = true;                  // all birds still swoop
 
     // Create tween but keep paused until countdown done
     const travelEase = 'none';
@@ -110,10 +112,17 @@ function startRace(e) {
 
     // Motion flair
     if (isSwooper) {
-      // Smooth sinusoidal up-down flight – looks like an S wave
-      const amplitude = gsap.utils.random(0.5*laneSpacing, 0.8*laneSpacing);
-      const period    = 1.2 + Math.random() * 0.8;
-      gsap.to(wrapper, {
+      // Flight path parameters
+      const amplitude = isCrazy
+        ? gsap.utils.random(1.0 * laneSpacing, 1.6 * laneSpacing)
+        : gsap.utils.random(0.4 * laneSpacing, 0.8 * laneSpacing);
+
+      const period = isCrazy
+        ? gsap.utils.random(0.5, 0.9) // fast flap for crazy birds
+        : 1.0 + Math.random() * 1.2;  // 1-2.2s gentle swoop
+
+      // Vertical sine wave (S-curve)
+      wrapper._sine = gsap.to(wrapper, {
         y: `+=${amplitude}`,
         repeat: -1,
         yoyo: true,
@@ -121,15 +130,33 @@ function startRace(e) {
         ease: "sine.inOut",
       });
 
-      // Subtle wing-tilt rotation
+      // Wing tilt / wobble rotation
       gsap.to(wrapper, {
-        rotation: () => gsap.utils.random(-15, 15),
+        rotation: () => gsap.utils.random(isCrazy ? -45 : -20, isCrazy ? 45 : 20),
         repeat: -1,
         yoyo: true,
-        duration: period,
+        duration: period * 0.8,
         ease: "sine.inOut",
       });
+
+      if (isCrazy) {
+        // Subtle left-right shimmy for personality (kept gentle)
+        const jitter = Math.min(8, laneSpacing * 0.2); // cap at 8px
+        gsap.to(wrapper, {
+          xPercent: "+=2",          // subtle left/right using percent so it doesn't fight x pixel tween
+          yoyo: true,
+          repeat: -1,
+          duration: 0.55,
+          ease: "sine.inOut",
+          overwrite: "none",        // keep _tween intact
+        });
+      }
     }
+
+    // Persist crazy flag for later behaviors
+    racers.push({ el: wrapper, name, finished:false, crazy:isCrazy, img, laneSpacing });
+
+    track.appendChild(wrapper);
   });
 
   // Show countdown
@@ -145,7 +172,13 @@ function startRace(e) {
      idx++;
      if(idx<nums.length){ setTimeout(tick,1000);} else {
         gsap.to(cdOverlay,{opacity:0,duration:0.5,onComplete:()=>cdOverlay.classList.add('hidden')});
-        racers.forEach(r=>{ if(r.el._tween){ r.el._tween.play(); maybeAdjustSpeed(r.el._tween);} });
+        racers.forEach(r=>{
+           if(r.el._tween){
+              r.el._tween.play();
+              maybeAdjustSpeed(r.el._tween);
+              if(r.crazy) scheduleLoop(r);
+           }
+        });
         raceStarted=true;
      }
   }
@@ -189,6 +222,10 @@ function announceWinner(racer) {
 
   // Feather & egg explosion
   spawnParticles();
+
+  // Hide the label so only the bird flies to center
+  const labelEl = racer.el.querySelector('.label');
+  if(labelEl) labelEl.style.display = 'none';
 
   // Move winning bird beneath announcement
   bringWinnerBird(racer.el);
@@ -257,15 +294,39 @@ function shuffle(arr) {
   return arr;
 }
 
-// Smooth speed adjustment: some birds gently accelerate mid-race
+// Smooth speed adjustment: birds may gently speed up or slow down mid-race
 function maybeAdjustSpeed(tween){
   if(Math.random()<0.4){ // 40% chance
      const delay = gsap.utils.random(2,5); // after 2-5 s
-     const newScale = gsap.utils.random(1.2,1.6); // gentle boost
+     const newScale = gsap.utils.random(0.6,1.6); // could slow or speed
      gsap.delayedCall(delay, ()=>{
         gsap.to(tween,{ timeScale:newScale, duration:1.5, ease:"sine.inOut" });
      });
   }
+}
+
+//────────────────────────────
+// Crazy bird loop-the-loop (vertical flip with upward arc)
+//────────────────────────────
+function scheduleLoop(racer){
+  const {el, img, laneSpacing} = racer;
+  if(!img || !el) return;
+  const mainDur = el._tween?.duration() || 10;
+  const delay   = gsap.utils.random(mainDur*0.25, mainDur*0.75);
+
+  const loopHeight = laneSpacing * 1.2; // how high the loop rises
+
+  gsap.delayedCall(delay, ()=>{
+       // Pause vertical sine to avoid conflict, resume after loop
+       if(el._sine) el._sine.pause();
+
+       const tl = gsap.timeline({onComplete:()=>{ if(el._sine) el._sine.resume(); }});
+       // upward arc & spin
+       tl.to(el, {y:`-=${loopHeight}`, duration:0.6, ease:"power2.out"});
+       tl.to(el, {y:`+=${loopHeight}`, duration:0.6, ease:"power2.in"});
+
+       tl.to(img, {rotation:"-=360", duration:1.2, ease:"power2.inOut"}, 0);
+  });
 }
 
 //────────────────────────────

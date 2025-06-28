@@ -76,9 +76,10 @@ button:hover { background: #385b9b; }
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -60%);
   margin: 0;
   pointer-events: none;
+  z-index: 2;
 }
 .bird-wrapper img { width: 250px; height:auto; object-fit:contain; pointer-events:none; }
 
