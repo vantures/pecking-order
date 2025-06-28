@@ -17,13 +17,14 @@ body {
   margin: 0;
   font-family: "Cardenio Modern", sans-serif;
   min-height: 100dvh; /* use dynamic viewport units to account for mobile UI chrome */
+  /* Warmer yellow-orange band through the middle */
   background: linear-gradient(to bottom,
-      #5b9156 0%,
-      #b9cc5b 35%,
-      #e6c556 45%,
-      #f0e47c 55%,
-      #71a2d8 80%,
-      #4c7ac4 100%);
+      #5b9156 0%,         /* forest green */
+      #c9b74a 30%,        /* earthy yellow-orange */
+      #e6b34d 45%,        /* richer orange */
+      #f2c75e 60%,        /* warm golden yellow */
+      #71a2d8 80%,        /* sky blue */
+      #4c7ac4 100%);      /* deeper blue */
   overflow-x: hidden;   /* never scroll sideways */
   overflow-y: auto;     /* allow vertical scroll before race */
 }
