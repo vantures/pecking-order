@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: "Segoe UI", sans-serif;
-  min-height: 100vh;
+  min-height: 100dvh; /* use dynamic viewport units to account for mobile UI chrome */
   background: linear-gradient(to bottom,
       #5b9156 0%,
       #b9cc5b 35%,
@@ -57,7 +57,7 @@ button:hover { background: #385b9b; }
   top: 20px;
   left: 0;
   width: 100%;
-  height: calc(100vh - 80px);
+  height: calc(100dvh - 80px);
   pointer-events: none;
 }
 
