@@ -106,7 +106,7 @@ function startRace(e) {
 
     // Baseline flight duration with a bit more variability
     const baseDuration = 11;
-    const speedFactor  = gsap.utils.random(0.85, 1.2);
+    const speedFactor  = gsap.utils.random(0.85, 1.1);
     const duration     = baseDuration * speedFactor;
 
     // Flight styles
@@ -309,11 +309,19 @@ function shuffle(arr) {
 
 // Smooth speed adjustment: birds may gently speed up or slow down mid-race
 function maybeAdjustSpeed(tween){
-  if(Math.random()<0.4){ // 40% chance
-     const delay = gsap.utils.random(2,5); // after 2-5 s
-     const newScale = gsap.utils.random(0.6,1.6); // could slow or speed
-     gsap.delayedCall(delay, ()=>{
-        gsap.to(tween,{ timeScale:newScale, duration:1.5, ease:"sine.inOut" });
+  // ~50% chance a bird will noticeably speed up or slow down mid-race
+  if(Math.random() < 0.5){
+     // Trigger somewhere in the first half of the race
+     const delay = gsap.utils.random(1.5, 4);
+
+     // Pick a scale between 0.5× and 2×, but ensure it differs from 1 by at least 0.2 (20%).
+     let newScale;
+     do {
+        newScale = gsap.utils.random(0.75, 2.0);
+     } while(Math.abs(newScale - 1) < 0.2);
+
+     gsap.delayedCall(delay, () => {
+        gsap.to(tween, { timeScale: newScale, duration: 1.2, ease: "sine.inOut" });
      });
   }
 }
