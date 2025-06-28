@@ -41,8 +41,20 @@ function addInput() {
   inputsDiv.appendChild(inp);
 }
 
+// Attempt to enter fullscreen mode (if supported) – must be called within a user-gesture handler
+function attemptFullscreen(){
+  const elem = document.documentElement;
+  if(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) return; // already full
+  const req = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen;
+  if(req) {
+     try { req.call(elem); } catch(e) {/* ignore failures */}
+  }
+}
+
 function startRace(e) {
   if(e && e.preventDefault) e.preventDefault();
+
+  attemptFullscreen(); // make the most of screen real estate on mobile
 
   // prevent multiple
   if (document.body.dataset.raceStarted) return;
