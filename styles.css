@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: "Segoe UI", sans-serif;
-  height: 100vh;
+  min-height: 100vh;
   background: linear-gradient(to bottom,
       #5b9156 0%,
       #b9cc5b 35%,
@@ -9,6 +9,12 @@ body {
       #f0e47c 55%,
       #71a2d8 80%,
       #4c7ac4 100%);
+  overflow-x: hidden;   /* never scroll sideways */
+  overflow-y: auto;     /* allow vertical scroll before race */
+}
+
+/* Disable scrolling once the race is underway */
+body.no-scroll {
   overflow: hidden;
 }
 

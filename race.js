@@ -53,6 +53,7 @@ function startRace(e) {
 
   // Hide form, show track
   form.classList.add('hidden');
+  document.body.classList.add('no-scroll');
   const noteEl = document.getElementById('landscapeNote');
   if (noteEl) noteEl.style.display = 'none';
   track.classList.remove('hidden');
@@ -83,10 +84,12 @@ function startRace(e) {
     label.textContent = name;
     wrapper.appendChild(label);
 
-    // Bird image
+    // Bird image – size based on lane spacing to fit small screens
     const img = document.createElement('img');
     img.src = birds[idx];
     img.alt = `${name}'s bird`;
+    const imgWidth = Math.round(laneSpacing * 1.4); // scale factor – tweak if needed
+    img.style.width = `${imgWidth}px`;
     wrapper.appendChild(img);
 
     track.appendChild(wrapper);
