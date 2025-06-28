@@ -69,7 +69,7 @@ button:hover { background: #385b9b; }
   text-shadow: 0 2px 4px rgba(0,0,0,0.6);
   margin-bottom: 4px;
 }
-.bird-wrapper img { height: 180px; pointer-events:none; }
+.bird-wrapper img { width: 250px; height:auto; object-fit:contain; pointer-events:none; }
 
 /* Winner overlay */
 #winnerOverlay {
