@@ -1,6 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Cardenio+Modern:wght@400;700&display=swap');
+
+@font-face {
+  font-family: "Cardenio Modern";
+  src: url("assets/fonts/CardenioModern-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Cardenio Modern";
+  src: url("assets/fonts/CardenioModern-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+}
+
 body {
   margin: 0;
-  font-family: "Segoe UI", sans-serif;
+  font-family: "Cardenio Modern", sans-serif;
   min-height: 100dvh; /* use dynamic viewport units to account for mobile UI chrome */
   background: linear-gradient(to bottom,
       #5b9156 0%,
@@ -70,7 +85,7 @@ button:hover { background: #385b9b; }
 .bird-wrapper .label {
   display: block;
   font-size: 1.2rem;
-  font-weight: 700;
+  font-weight: 400;
   color: #fff;
   text-shadow: 0 2px 4px rgba(0,0,0,0.6);
   position: absolute;
@@ -189,4 +204,20 @@ button:hover { background: #385b9b; }
     margin-bottom: -4px;
     font-size: 1rem;
   }
+}
+
+/* Landing subtitle & image */
+#subtitle {
+  text-align: center;
+  color: #fff;
+  font-weight: 400;
+  font-size: 1.3rem; /* slightly smaller */
+  margin-top: 0.2rem;
+  margin-bottom: 0.3rem;
+}
+#landingImage {
+  display: block;
+  margin: 0.5rem auto 1rem;
+  width: min(90vw, 320px);
+  height: auto;
 } 

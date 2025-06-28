@@ -56,6 +56,10 @@ function startRace(e) {
   document.body.classList.add('no-scroll');
   const noteEl = document.getElementById('landscapeNote');
   if (noteEl) noteEl.style.display = 'none';
+  const subEl = document.getElementById('subtitle');
+  if(subEl) subEl.style.display='none';
+  const imgEl = document.getElementById('landingImage');
+  if(imgEl) imgEl.style.display='none';
   track.classList.remove('hidden');
 
   // Shuffle birds and pick as many as we need
