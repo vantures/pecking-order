@@ -53,6 +53,8 @@ function startRace(e) {
 
   // Hide form, show track
   form.classList.add('hidden');
+  const noteEl = document.getElementById('landscapeNote');
+  if (noteEl) noteEl.style.display = 'none';
   track.classList.remove('hidden');
 
   // Shuffle birds and pick as many as we need

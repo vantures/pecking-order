@@ -67,7 +67,12 @@ button:hover { background: #385b9b; }
   font-weight: 700;
   color: #fff;
   text-shadow: 0 2px 4px rgba(0,0,0,0.6);
-  margin-bottom: 4px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  pointer-events: none;
 }
 .bird-wrapper img { width: 250px; height:auto; object-fit:contain; pointer-events:none; }
 
@@ -132,4 +137,49 @@ button:hover { background: #385b9b; }
   font-size:1.1rem;
   opacity:0;
 }
-#resultsCenter li {margin:0.15rem 0;} 
+#resultsCenter li {margin:0.15rem 0;}
+
+/* Prompt shown on phones in portrait */
+#landscapeNote {
+  display: none;
+  text-align: center;
+  margin: 0.5rem auto;
+  color: #fff;
+  background: rgba(0,0,0,0.6);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-weight: 600;
+  width: 90vw;
+  max-width: 350px;
+}
+@media (orientation: portrait) and (max-width: 768px) {
+  #landscapeNote {
+    display: block;
+  }
+}
+
+/* Smaller bird graphics on small screens */
+@media (max-width: 768px) {
+  .bird-wrapper img {
+    width: 200px;
+  }
+  .bird-wrapper .label {
+    font-size: 1rem;
+  }
+}
+@media (max-width: 480px) {
+  .bird-wrapper img {
+    width: 150px;
+  }
+  .bird-wrapper .label {
+    font-size: 0.9rem;
+  }
+}
+
+/* In phone landscape the viewport height is small; tighten label spacing */
+@media (orientation: landscape) and (max-height: 500px) {
+  .bird-wrapper .label {
+    margin-bottom: -4px;
+    font-size: 1rem;
+  }
+} 

@@ -10,6 +10,9 @@
 <body>
   <h1 id="title" style="cursor:pointer">Pecking Order</h1>
 
+  <!-- Mobile hint -->
+  <div id="landscapeNote">Rotate your phone to landscape for a longer race track!</div>
+
   <form id="setup">
     <div id="inputs"></div>
     <button type="submit">Start Race</button>
@@ -33,6 +36,8 @@
   <div id="resultsSmall" class="hidden" style="opacity:0;">
     <ol id="resultsList"></ol>
   </div>
+
+  <div id="rotateTip" class="hidden">Best viewed in landscape ↻</div>
 
   <script src="race.js"></script>
 </body>
