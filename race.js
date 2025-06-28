@@ -363,8 +363,27 @@ function dropDead(racer){
     y: `+=${distance}`,
     duration: 1,
     ease: "power2.in",
-    onComplete: ()=>{ gsap.killTweensOf(racer.el); }
+    onComplete: ()=>{
+      gsap.killTweensOf(racer.el);
+      const finalRect = racer.el.getBoundingClientRect();
+      spawnFeathersAt(finalRect.left + finalRect.width/2, finalRect.top + finalRect.height/2);
+    }
   });
+}
+
+// Spawn a small feather burst at a given screen coordinate
+function spawnFeathersAt(x,y){
+  const COUNT = 18;
+  for(let i=0;i<COUNT;i++){
+     const img=document.createElement('img');
+     img.src='assets/feather.png';
+     img.className='feather';
+     document.body.appendChild(img);
+     gsap.set(img,{left:x,top:y,xPercent:-50,yPercent:-50,scale:0.25,rotation:gsap.utils.random(-40,40),position:'fixed',pointerEvents:'none'});
+     const angle=Math.random()*Math.PI*2;
+     const dist=gsap.utils.random(80,180);
+     gsap.to(img,{x:Math.cos(angle)*dist,y:Math.sin(angle)*dist,rotation:gsap.utils.random(-360,360),opacity:0,duration:1.2,ease:'power2.out',onComplete:()=>img.remove()});
+  }
 }
 
 //────────────────────────────
