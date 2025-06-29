@@ -451,6 +451,13 @@ function dropDead(racer){
     ease: "power2.in",
     onComplete: ()=>{
       gsap.killTweensOf(racer.el);
+
+      // Play thud sound and spawn feathers at landing spot
+      thudSFX.currentTime = 0;
+      thudSFX.play().catch(()=>{});
+
+      const finalRect = racer.el.getBoundingClientRect();
+      spawnFeathersAt(finalRect.left + finalRect.width/2, finalRect.top + finalRect.height/2);
     }
   });
 }
@@ -566,4 +573,8 @@ sparrowSFX.loop = true;
 
 // Poof sound when a losing bird crashes
 const poofSFX = new Audio('assets/audio/poof.wav');
-poofSFX.preload = 'auto'; 
+poofSFX.preload = 'auto';
+
+// Thud sound at ground impact
+const thudSFX = new Audio('assets/audio/thud.wav');
+thudSFX.preload = 'auto'; 
