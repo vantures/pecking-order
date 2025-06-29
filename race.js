@@ -439,8 +439,11 @@ function dropDead(racer){
      gsap.to(img,{rotation:"-=180", duration:0.4, ease:"power1.in"});
   }
 
-  // drop to bottom
+  // Trigger feathers explosion at impact point (wall)
   const rect = racer.el.getBoundingClientRect();
+  spawnFeathersAt(rect.left + rect.width/2, rect.top + rect.height/2);
+
+  // drop to bottom
   const distance = window.innerHeight - rect.bottom + 20; // little extra off-screen
   gsap.to(racer.el, {
     y: `+=${distance}`,
@@ -448,8 +451,6 @@ function dropDead(racer){
     ease: "power2.in",
     onComplete: ()=>{
       gsap.killTweensOf(racer.el);
-      const finalRect = racer.el.getBoundingClientRect();
-      spawnFeathersAt(finalRect.left + finalRect.width/2, finalRect.top + finalRect.height/2);
     }
   });
 }
