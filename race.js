@@ -68,6 +68,13 @@ function startRace(e) {
   if (document.body.dataset.raceStarted) return;
   document.body.dataset.raceStarted = 'yes';
 
+  // Start background music once per session
+  if(bgMusic.paused){
+     bgMusic.currentTime = 0;
+     bgMusic.volume = 0.5; // moderate level beneath SFX
+     bgMusic.play().catch(()=>{});
+  }
+
   // Collect trimmed non-empty names
   const names = [...inputsDiv.querySelectorAll('input')]
       .map(inp => inp.value.trim())
@@ -196,7 +203,27 @@ function startRace(e) {
   const nums = ['3','2','1','Go!'];
   let idx=0;
   function tick(){
-     cdText.textContent = nums[idx];
+     const current = nums[idx];
+     cdText.textContent = current;
+
+     // Play countdown sounds: crow for 3,2,1; owl starts half-second before "Go!"
+     if(current === 'Go!'){
+        // No sound exactly at "Go!" – owl already triggered 0.5 s earlier
+     } else {
+        // Play crow caw for the visible number
+        crowSFX.currentTime = 0;
+        crowSFX.play().catch(()=>{});
+
+        // When the last number "1" shows, queue the owl hoot so it begins 0.5 s
+        // before the next tick reveals "Go!" (which fires 1 s later)
+        if(current === '1'){
+           setTimeout(()=>{
+              owlSFX.currentTime = 0;
+              owlSFX.play().catch(()=>{});
+           }, 500);
+        }
+     }
+
      idx++;
      if(idx<nums.length){ setTimeout(tick,1000);} else {
         gsap.to(cdOverlay,{opacity:0,duration:0.5,onComplete:()=>cdOverlay.classList.add('hidden')});
@@ -208,6 +235,14 @@ function startRace(e) {
            }
         });
         raceStarted=true;
+
+        // Start ambience loops after "Go!"
+        flappingSFX.currentTime = 0;
+        flappingSFX.play().catch(()=>{});
+        parrotsSFX.currentTime = 0;
+        parrotsSFX.play().catch(()=>{});
+        sparrowSFX.currentTime = 0;
+        sparrowSFX.play().catch(()=>{});
      }
   }
   tick();
@@ -231,6 +266,14 @@ function startRace(e) {
           }
           // When all birds finished, show results after short delay
           if(finishOrder.length === racers.length){
+            // Stop ambience loops
+            flappingSFX.pause();
+            flappingSFX.currentTime = 0;
+            parrotsSFX.pause();
+            parrotsSFX.currentTime = 0;
+            sparrowSFX.pause();
+            sparrowSFX.currentTime = 0;
+
             gsap.delayedCall(1, ()=>showResults(finishOrder));
           }
         }
@@ -264,6 +307,14 @@ function announceWinner(racer) {
   bringWinnerBird(racer.el);
 
   // Keep header visible for new races
+
+  // Stop background music
+  bgMusic.pause();
+  bgMusic.currentTime = 0;
+
+  // Play celebration sound
+  successSFX.currentTime = 0;
+  successSFX.play().catch(()=>{});
 }
 
 function bringWinnerBird(el){
@@ -405,6 +456,10 @@ function dropDead(racer){
 
 // Spawn a small feather burst at a given screen coordinate
 function spawnFeathersAt(x,y){
+  // Play poof sound
+  poofSFX.currentTime = 0;
+  poofSFX.play().catch(()=>{});
+
   const COUNT = 18;
   for(let i=0;i<COUNT;i++){
      const img=document.createElement('img');
@@ -475,4 +530,39 @@ async function attemptFullscreen(){
 
   // After (attempted) fullscreen, try orientation lock
   await lockLandscape();
-} 
+}
+
+// ───────────────────────────────────────────────────────────
+// Audio SFX for countdown + background
+// ───────────────────────────────────────────────────────────
+const crowSFX = new Audio('assets/audio/crow.wav');
+crowSFX.preload = 'auto';
+const owlSFX  = new Audio('assets/audio/owl.mp3');
+owlSFX.preload  = 'auto';
+
+// Background music (loops during race)
+const bgMusic = new Audio('assets/audio/bg1.mp3');
+bgMusic.preload = 'auto';
+bgMusic.loop = true;
+
+// Celebration & ambience sounds
+const successSFX = new Audio('assets/audio/complete1.wav');
+successSFX.preload = 'auto';
+
+// Ambience loops during race
+const flappingSFX = new Audio('assets/audio/flapping.wav');
+flappingSFX.preload = 'auto';
+flappingSFX.loop = true;
+
+const parrotsSFX = new Audio('assets/audio/parrots2.wav');
+parrotsSFX.preload = 'auto';
+parrotsSFX.loop = true;
+
+// Additional sparrow ambient sound
+const sparrowSFX = new Audio('assets/audio/sparrow1.wav');
+sparrowSFX.preload = 'auto';
+sparrowSFX.loop = true;
+
+// Poof sound when a losing bird crashes
+const poofSFX = new Audio('assets/audio/poof.wav');
+poofSFX.preload = 'auto'; 
