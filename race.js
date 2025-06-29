@@ -345,7 +345,7 @@ function bringWinnerBird(el){
        // Magnify winner slightly, then start gentle hover bob
        gsap.to(el, {
          scale: 1.50,
-         duration: 0.6,magnify 
+         duration: 0.6,
          ease: "back.out(1.6)",
          onComplete: ()=>{
            gsap.to(el, { y:"+=15", duration:1, yoyo:true, repeat:-1, ease:"sine.inOut"});
