@@ -257,4 +257,20 @@ button:hover {
 
 #setup > button[type="submit"]:hover {
   background: #1b5e20;
-} 
+}
+
+/* Prompt to rotate device in portrait mode */
+#rotateTip {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.65);
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 700;
+  z-index: 120;
+  pointer-events: none;
+}
+#rotateTip.hidden { display: none; } 

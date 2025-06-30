@@ -26,6 +26,7 @@ const track     = document.getElementById('track');
 const startBtn  = document.querySelector('#setup button[type="submit"], #start');
 const title     = document.getElementById('title');
 const fullBtn   = document.getElementById('fullscreenBtn');
+const rotateTip = document.getElementById('rotateTip');
 
 // ───────────────────────────────────────────────────────────
 // Persistent player name storage
@@ -60,10 +61,22 @@ if (startBtn) startBtn.onclick = startRace;
 if(title) title.onclick = () => location.reload();
 
 // Show fullscreen prompt button on mobile portrait
+function isChromeMobile(){
+  if(!isMobile()) return false;
+  const ua = navigator.userAgent;
+  // "CriOS" = Chrome on iOS, "Chrome" covers Android; exclude Edge and Samsung Internet
+  return /Chrome|CriOS/i.test(ua) && !/Edg|OPR|SamsungBrowser/i.test(ua);
+}
+
 function updateFsBtnVisibility(){
-  if(!fullBtn) return;
-  const shouldShow = isMobile() && window.matchMedia('(orientation: portrait)').matches;
-  fullBtn.classList.toggle('hidden', !shouldShow);
+  const mobilePortrait = isMobile() && window.matchMedia('(orientation: portrait)').matches;
+  const chromeMobile   = isChromeMobile();
+
+  // Show fullscreen button only on Chrome mobile in portrait
+  if(fullBtn)   fullBtn.classList.toggle('hidden', !(mobilePortrait && chromeMobile));
+
+  // Show rotate tip for non-Chrome mobile browsers while in portrait
+  if(rotateTip) rotateTip.classList.toggle('hidden', !(mobilePortrait && !chromeMobile));
 }
 
 if(fullBtn){
