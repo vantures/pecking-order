@@ -603,7 +603,7 @@ async function attemptFullscreen(){
 // ───────────────────────────────────────────────────────────
 // Audio SFX for countdown + background
 // ───────────────────────────────────────────────────────────
-const crowSFX = new Audio('assets/audio/crow.wav');
+const crowSFX = new Audio('assets/audio/crow.mp3');
 crowSFX.preload = 'auto';
 const owlSFX  = new Audio('assets/audio/owl.mp3');
 owlSFX.preload  = 'auto';
@@ -614,27 +614,27 @@ bgMusic.preload = 'auto';
 bgMusic.loop = true;
 
 // Celebration & ambience sounds
-const successSFX = new Audio('assets/audio/complete1.wav');
+const successSFX = new Audio('assets/audio/complete1.mp3');
 successSFX.preload = 'auto';
 
 // Ambience loops during race
-const flappingSFX = new Audio('assets/audio/flapping.wav');
+const flappingSFX = new Audio('assets/audio/flapping.mp3');
 flappingSFX.preload = 'auto';
 flappingSFX.loop = true;
 
-const parrotsSFX = new Audio('assets/audio/parrots2.wav');
+const parrotsSFX = new Audio('assets/audio/parrots2.mp3');
 parrotsSFX.preload = 'auto';
 parrotsSFX.loop = true;
 
 // Additional sparrow ambient sound
-const sparrowSFX = new Audio('assets/audio/sparrow1.wav');
+const sparrowSFX = new Audio('assets/audio/sparrow1.mp3');
 sparrowSFX.preload = 'auto';
 sparrowSFX.loop = true;
 
 // Poof sound when a losing bird crashes
-const poofSFX = new Audio('assets/audio/poof.wav');
+const poofSFX = new Audio('assets/audio/poof.mp3');
 poofSFX.preload = 'auto';
 
 // Thud sound at ground impact
-const thudSFX = new Audio('assets/audio/thud.wav');
+const thudSFX = new Audio('assets/audio/thud.mp3');
 thudSFX.preload = 'auto'; 
