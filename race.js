@@ -27,6 +27,7 @@ const startBtn  = document.querySelector('#setup button[type="submit"], #start')
 const title     = document.getElementById('title');
 const fullBtn   = document.getElementById('fullscreenBtn');
 const rotateTip = document.getElementById('rotateTip');
+const fsMsg     = document.getElementById('fullscreenMsg');
 
 // ───────────────────────────────────────────────────────────
 // Persistent player name storage
@@ -83,6 +84,7 @@ function updateFsBtnVisibility(){
   // Full-screen button only for Chrome on Android (mobile Chrome AND not iOS)
   const showFs = mobilePortrait && chromeAndroid;
   if(fullBtn)   fullBtn.classList.toggle('hidden', !showFs);
+  if(fsMsg)     fsMsg.classList.toggle('hidden', !showFs);
 
   // Rotate tip for any mobile portrait scenario where fullscreen isn't offered
   const showTip = mobilePortrait && !showFs;

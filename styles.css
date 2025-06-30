@@ -194,7 +194,7 @@ button:hover {
     font-size: 1rem;
   }
   #landingImage {
-    display: none;
+    display: none !important;
   }
 }
 @media (max-width: 480px) {
@@ -305,4 +305,7 @@ button:hover {
 
 #loaderOverlay.hidden {
   display: none !important;
-} 
+}
+
+/* Hint message below fullscreen button */
+#fullscreenMsg.hidden { display:none !important; } 
