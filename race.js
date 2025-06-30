@@ -1,6 +1,9 @@
 // Maximum number of players supported
 const MAX_PLAYERS = 5;
 
+// Names of birds that get captured by the swooping eagle – appended to results last
+const capturedNames = [];
+
 // List of bird image paths (place bird images in assets/birds/)
 const birdImages = [
   'assets/birds/brown_pelican.png',
@@ -291,6 +294,11 @@ function startRace(e) {
         });
         raceStarted=true;
 
+        // 20% chance the owl swoops in this race
+        if(Math.random() < 0.20) {
+           scheduleEagle();
+        }
+
         // Start ambience loops after "Go!"
         flappingSFX.currentTime = 0;
         flappingSFX.play().catch(()=>{});
@@ -308,7 +316,7 @@ function startRace(e) {
     window._peckingFinishTicker = gsap.ticker.add(() => {
       if (!raceStarted) return;
       for (const r of racers) {
-        if(r.finished) continue;
+        if(r.finished || r.captured) continue;
         const rect = r.el.getBoundingClientRect();
         if (rect.right >= window.innerWidth - FINISH_OFFSET) {
           r.finished=true;
@@ -334,6 +342,127 @@ function startRace(e) {
         }
       }
     });
+  }
+
+  // ───────────────────────────────────────────────────────────
+  // Eagle swoop – grabs a random racer mid-flight
+  // ───────────────────────────────────────────────────────────
+  function scheduleEagle(){
+    // Launch the eagle a bit after the race begins (2–4 s)
+    const delay = gsap.utils.random(2,4);
+    gsap.delayedCall(delay, launchEagle);
+  }
+
+  function launchEagle(){
+    // Choose a random racer that is still alive and not already captured
+    const potentials = racers.filter(r=>!r.finished && !r.captured);
+    if(!potentials.length) return;
+    const target = potentials[Math.floor(Math.random() * potentials.length)];
+
+    // Create owl image (great horned owl sprite – rendered larger)
+    const eagle = document.createElement('img');
+    eagle.src = 'assets/predators/great_horned_owl.png';
+    eagle.className = 'eagle';
+    Object.assign(eagle.style, {
+      position: 'fixed',
+      left: '0px',   // use transform for movement
+      top:  '0px',
+      width: '170px',
+      zIndex: 9999,
+      pointerEvents: 'none',
+      transform: 'rotate(20deg)',
+    });
+    // Start off-screen (top-left) using transform translate
+    gsap.set(eagle,{x:-250,y:-250});
+    document.body.appendChild(eagle);
+
+    // Calculate where to intercept the bird – position eagle so talons overlap the bird
+    const rect = target.el.getBoundingClientRect();
+    // Use fixed dimensions (image may not be loaded yet)
+    const EAGLE_SIZE = 170; // matches style width
+
+    // Bird center coordinates
+    const birdCenterX = rect.left + rect.width/2;
+    const birdCenterY = rect.top  + rect.height/2;
+
+    // Measure actual eagle dimensions (after width applied)
+    const eagleRect = eagle.getBoundingClientRect();
+    const eagleW = eagleRect.width;
+    const eagleH = eagleRect.height;
+
+    // Smaller horizontal lead – about 30% of bird width
+    const HORIZ_LEAD = rect.width * 0.3;
+    const grabX = birdCenterX - eagleW/2 + HORIZ_LEAD;
+
+    // Slightly higher talon alignment – 85% of sprite height, no extra offset
+    const TALON_RATIO = 0.85;
+    const grabY = birdCenterY - eagleH * TALON_RATIO;
+
+    // Swoop to the grab position
+    gsap.to(eagle, {
+      x: grabX,
+      y: grabY,
+      duration: 0.9,
+      ease: 'power2.in',
+      onComplete: () => grabBird(target, eagle)
+    });
+  }
+
+  function grabBird(racer, eagleEl){
+    if(racer.captured) return;
+    racer.captured = true;
+
+    // Stop racer animations
+    if(racer.el._tween) racer.el._tween.pause();
+    if(racer.el._sine)  racer.el._sine.pause();
+    gsap.killTweensOf(racer.el);
+
+    // Feather burst for effect
+    const rect = racer.el.getBoundingClientRect();
+    spawnFeathersAt(rect.left + rect.width/2, rect.top + rect.height/2);
+
+    // Fly off towards top-right corner carrying the bird
+    const destX = window.innerWidth + 300;
+    const destY = -200;
+
+    // Calculate deltas for each element so they end together
+    const eagleRect = eagleEl.getBoundingClientRect();
+    const deltaEagleX = destX - eagleRect.left;
+    const deltaEagleY = destY - eagleRect.top;
+
+    const deltaBirdX  = destX - rect.left;
+    const deltaBirdY  = destY - rect.top;
+
+    const tl = gsap.timeline({
+      onComplete: ()=>{
+        // Remove DOM nodes once off-screen
+        eagleEl.remove();
+        racer.el.remove();
+
+        // Mark as finished and record for results (always last)
+        racer.finished = true;
+        capturedNames.push(racer.name);
+
+        // Add to finish order (captured birds counted as finished)
+        finishOrder.push(racer.name);
+
+        // When all birds finished, show results after short delay
+        if(finishOrder.length === racers.length){
+          // Stop ambience loops
+          flappingSFX.pause();
+          flappingSFX.currentTime = 0;
+          parrotsSFX.pause();
+          parrotsSFX.currentTime = 0;
+          sparrowSFX.pause();
+          sparrowSFX.currentTime = 0;
+
+          gsap.delayedCall(1, ()=>showResults(finishOrder));
+        }
+      }
+    });
+
+    tl.to(eagleEl, { x:`+=${deltaEagleX}`, y:`+=${deltaEagleY}`, duration:1.4, ease:'power2.in' }, 0)
+      .to(racer.el, { x:`+=${deltaBirdX}`,  y:`+=${deltaBirdY}`,  duration:1.4, ease:'power2.in' }, 0);
   }
 }
 
@@ -547,17 +676,19 @@ function spawnFeathersAt(x,y){
 // Results overlay
 //────────────────────────────
 function showResults(order){
-   const list = document.getElementById('resultsCenter');
-   if(!list) return;
-   list.innerHTML='';
-   order.forEach((n,i)=>{
-      const li=document.createElement('li');
-      li.textContent=`${i+1}. ${n}`;
-      list.appendChild(li);
-   });
-   list.classList.remove('hidden');
-   gsap.to(list,{opacity:1,duration:1, delay:0.2});
-}
+    const list = document.getElementById('resultsCenter');
+    if(!list) return;
+    list.innerHTML='';
+    // Ensure captured birds are placed last
+    const finalOrder = order.filter(n=>!capturedNames.includes(n)).concat(capturedNames);
+    finalOrder.forEach((n,i)=>{
+       const li=document.createElement('li');
+       li.textContent=`${i+1}. ${n}`;
+       list.appendChild(li);
+    });
+    list.classList.remove('hidden');
+    gsap.to(list,{opacity:1,duration:1, delay:0.2});
+ }
 
 // Helper: true = phone/tablet
 function isMobile() {
@@ -652,6 +783,8 @@ async function preloadAssets(onProgress) {
   const manifest = [
     // bird sprites
     ...birdImages.map(src => ({ type: 'img', src })),
+    // predator sprite
+    { type: 'img', src: 'assets/predators/great_horned_owl.png' },
     // particles
     { type: 'img', src: 'assets/feather.png' },
     { type: 'img', src: 'assets/egg_blue.png' },
