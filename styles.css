@@ -273,4 +273,8 @@ button:hover {
   z-index: 120;
   pointer-events: none;
 }
-#rotateTip.hidden { display: none; } 
+#rotateTip.hidden { display: none; }
+
+#fullscreenBtn.hidden {
+  display: none !important;
+} 
