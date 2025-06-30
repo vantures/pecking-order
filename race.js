@@ -61,22 +61,32 @@ if (startBtn) startBtn.onclick = startRace;
 if(title) title.onclick = () => location.reload();
 
 // Show fullscreen prompt button on mobile portrait
-function isChromeMobile(){
+function isChromeAndroid(){
   if(!isMobile()) return false;
   const ua = navigator.userAgent;
-  // "CriOS" = Chrome on iOS, "Chrome" covers Android; exclude Edge and Samsung Internet
-  return /Chrome|CriOS/i.test(ua) && !/Edg|OPR|SamsungBrowser/i.test(ua);
+  // True Chrome on Android includes "Chrome" but NOT "CriOS" (iOS), Edge, Opera, Samsung
+  return /Chrome/i.test(ua) && !/CriOS|Edg|OPR|SamsungBrowser/i.test(ua);
+}
+
+function isIOS(){
+  const ua = navigator.userAgent;
+  const iOSDevice = /iP(hone|od|ad)/i.test(ua);
+  // iPadOS 13+ reports MacIntel; detect via touch points
+  const iPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+  return iOSDevice || iPadOS;
 }
 
 function updateFsBtnVisibility(){
   const mobilePortrait = isMobile() && window.matchMedia('(orientation: portrait)').matches;
-  const chromeMobile   = isChromeMobile();
+  const chromeAndroid  = isChromeAndroid();
 
-  // Show fullscreen button only on Chrome mobile in portrait
-  if(fullBtn)   fullBtn.classList.toggle('hidden', !(mobilePortrait && chromeMobile));
+  // Full-screen button only for Chrome on Android (mobile Chrome AND not iOS)
+  const showFs = mobilePortrait && chromeAndroid;
+  if(fullBtn)   fullBtn.classList.toggle('hidden', !showFs);
 
-  // Show rotate tip for non-Chrome mobile browsers while in portrait
-  if(rotateTip) rotateTip.classList.toggle('hidden', !(mobilePortrait && !chromeMobile));
+  // Rotate tip for any mobile portrait scenario where fullscreen isn't offered
+  const showTip = mobilePortrait && !showFs;
+  if(rotateTip) rotateTip.classList.toggle('hidden', !showTip);
 }
 
 if(fullBtn){
