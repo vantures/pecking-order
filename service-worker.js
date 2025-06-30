@@ -1,6 +1,6 @@
 // service-worker.js
 // Basic offline caching for Pecking Order
-const CACHE_NAME = 'pecking-order-v1';
+const CACHE_NAME = 'pecking-order-v2';
 const ASSETS = [
   '/',
   'index.html',
@@ -27,6 +27,8 @@ const ASSETS = [
   'assets/birds/painted_bunting.png',
   'assets/birds/bald_eagle.png',
   'assets/birds/trumpeter_swan.png',
+  // Predator sprite
+  'assets/predators/great_horned_owl.png',
   // Audio
   'assets/audio/bg1.mp3',
   'assets/audio/crow.mp3',
