@@ -308,4 +308,14 @@ button:hover {
 }
 
 /* Hint message below fullscreen button */
-#fullscreenMsg.hidden { display:none !important; } 
+#fullscreenMsg.hidden { display:none !important; }
+
+/* Hide landing image on touch devices too */
+@media (pointer: coarse) {
+  #landingImage { display: none !important; }
+}
+
+/* Spacing: ensure button appears below name inputs with breathing room */
+#inputs + button[type="submit"] {
+  margin-top: 0.8rem;
+} 
