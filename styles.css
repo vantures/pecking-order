@@ -193,6 +193,9 @@ button:hover {
   .bird-wrapper .label {
     font-size: 1rem;
   }
+  #landingImage {
+    display: none;
+  }
 }
 @media (max-width: 480px) {
   .bird-wrapper img {
