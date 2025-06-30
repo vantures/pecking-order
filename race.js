@@ -27,8 +27,33 @@ const startBtn  = document.querySelector('#setup button[type="submit"], #start')
 const title     = document.getElementById('title');
 const fullBtn   = document.getElementById('fullscreenBtn');
 
+// ───────────────────────────────────────────────────────────
+// Persistent player name storage
+// ───────────────────────────────────────────────────────────
+const STORAGE_KEY = 'playerNames';
+
+function saveNames() {
+  try {
+    const names = [...inputsDiv.querySelectorAll('input')].map(inp => inp.value.trim());
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(names));
+  } catch (_) {/* storage unavailable or disabled */}
+}
+
+function loadSavedNames() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    saved.slice(0, MAX_PLAYERS).forEach((name, idx) => {
+      if (!inputsDiv.children[idx]) addInput();
+      inputsDiv.children[idx].value = name;
+    });
+  } catch (_) {/* ignore malformed data */}
+}
+
 // Start with five player input boxes
 for (let i = 0; i < MAX_PLAYERS; i++) addInput();
+
+// Load any saved player names from previous sessions
+loadSavedNames();
 
 if (startBtn) startBtn.onclick = startRace;
 
@@ -59,6 +84,8 @@ function addInput() {
   inp.placeholder = 'Player name';
   // not required – players may leave blanks
   inputsDiv.appendChild(inp);
+  // Persist any changes immediately
+  inp.addEventListener('input', saveNames);
 }
 
 function startRace(e) {
@@ -81,6 +108,9 @@ function startRace(e) {
       .filter(v => v.length);
 
   if (!names.length) return;
+
+  // Persist the latest names list
+  saveNames();
 
   // Hide form, show track
   form.classList.add('hidden');
