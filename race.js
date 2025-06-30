@@ -56,7 +56,7 @@ for (let i = 0; i < MAX_PLAYERS; i++) addInput();
 // Load any saved player names from previous sessions
 loadSavedNames();
 
-if (startBtn) startBtn.onclick = startRace;
+if (startBtn) startBtn.onclick = handleStartClick;
 
 if(title) title.onclick = () => location.reload();
 
@@ -637,4 +637,105 @@ poofSFX.preload = 'auto';
 
 // Thud sound at ground impact
 const thudSFX = new Audio('assets/audio/thud.mp3');
-thudSFX.preload = 'auto'; 
+thudSFX.preload = 'auto';
+
+// ───────────────────────────────────────────────────────────
+// Asset preloader and click handler (mobile-friendly)
+// ───────────────────────────────────────────────────────────
+
+/**
+ * Preload critical images & audio. Calls onProgress(0‒100).
+ */
+async function preloadAssets(onProgress) {
+  const manifest = [
+    // bird sprites
+    ...birdImages.map(src => ({ type: 'img', src })),
+    // particles
+    { type: 'img', src: 'assets/feather.png' },
+    { type: 'img', src: 'assets/egg_blue.png' },
+    { type: 'img', src: 'assets/egg_green.png' },
+    { type: 'img', src: 'assets/egg_orange.png' },
+    { type: 'img', src: 'assets/egg_pink.png' },
+    { type: 'img', src: 'assets/egg_purple.png' },
+    { type: 'img', src: 'assets/egg_yellow.png' },
+
+    // audio clips
+    { type: 'audio', src: 'assets/audio/bg1.mp3' },
+    { type: 'audio', src: 'assets/audio/crow.mp3' },
+    { type: 'audio', src: 'assets/audio/owl.mp3' },
+    { type: 'audio', src: 'assets/audio/complete1.mp3' },
+    { type: 'audio', src: 'assets/audio/flapping.mp3' },
+    { type: 'audio', src: 'assets/audio/parrots2.mp3' },
+    { type: 'audio', src: 'assets/audio/sparrow1.mp3' },
+    { type: 'audio', src: 'assets/audio/poof.mp3' },
+    { type: 'audio', src: 'assets/audio/thud.mp3' },
+  ];
+
+  const total = manifest.length;
+  let loaded = 0;
+  const update = () => {
+    if (onProgress) onProgress(Math.round((loaded / total) * 100));
+  };
+  update();
+
+  await Promise.all(
+    manifest.map(item =>
+      new Promise(resolve => {
+        if (item.type === 'img') {
+          const img = new Image();
+          img.src = item.src;
+          img.onload = img.onerror = () => {
+            loaded++; update(); resolve();
+          };
+        } else {
+          const audio = new Audio();
+          audio.src = item.src;
+          audio.preload = 'auto';
+          const done = () => { loaded++; update(); resolve(); };
+          audio.oncanplaythrough = done;
+          audio.onerror = done; // ignore failures – keep going
+        }
+      })
+    )
+  );
+}
+
+/**
+ * Handles the "Take Flight" button click: shows loader, preloads assets, then starts the race.
+ */
+async function handleStartClick(e) {
+  if (e && e.preventDefault) e.preventDefault();
+
+  // Avoid double-clicks
+  if (document.body.dataset.preloading) return;
+
+  // Validate at least one name so we don't wait needlessly
+  const names = [...inputsDiv.querySelectorAll('input')]
+                  .map(inp => inp.value.trim())
+                  .filter(Boolean);
+  if (!names.length) return; // early – mirrors original guard
+
+  document.body.dataset.preloading = 'yes';
+
+  const loaderOverlay = document.getElementById('loaderOverlay');
+  const loaderText    = document.getElementById('loaderText');
+  if (loaderOverlay) loaderOverlay.classList.remove('hidden');
+
+  await preloadAssets(pct => {
+    if (loaderText) loaderText.textContent = `Loading ${pct}%`;
+  });
+
+  // Hide loader
+  if (loaderOverlay) loaderOverlay.classList.add('hidden');
+  delete document.body.dataset.preloading;
+
+  // Prime one audio element so subsequent play() calls are allowed
+  try {
+    await bgMusic.play();
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
+  } catch(_) {/* ignore */}
+
+  // Proceed to the regular flow
+  startRace(e);
+} 

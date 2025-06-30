@@ -64,8 +64,22 @@
     <ol id="resultsList"></ol>
   </div>
 
+  <!-- Loading overlay -->
+  <div id="loaderOverlay" class="hidden">
+    <h2 id="loaderText">Loading&nbsp;0%</h2>
+  </div>
+
   <div id="rotateTip" class="hidden">Flip to landscape before starting race ↻</div>
 
   <script src="race.js"></script>
+
+  <!-- Register service worker for offline caching -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').catch(console.warn);
+      });
+    }
+  </script>
 </body>
 </html> 
