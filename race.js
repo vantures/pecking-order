@@ -17,6 +17,9 @@ const birdImages = [
   'assets/birds/painted_bunting.png',
   'assets/birds/bald_eagle.png',
   'assets/birds/trumpeter_swan.png',
+  'assets/birds/california_condor.png',
+  'assets/birds/baltimore_oriole.png',
+  'assets/birds/kakapo.png',
 ];
 
 // ───────────────────────────────────────────────────────────
