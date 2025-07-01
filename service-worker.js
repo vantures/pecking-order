@@ -1,6 +1,6 @@
 // service-worker.js
 // Basic offline caching for Pecking Order
-const CACHE_NAME = 'pecking-order-v2';
+const CACHE_NAME = 'pecking-order-v3';
 const ASSETS = [
   '/',
   'index.html',
