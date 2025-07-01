@@ -366,6 +366,9 @@ function startRace(e) {
     const eagle = document.createElement('img');
     eagle.src = 'assets/predators/great_horned_owl.png';
     eagle.className = 'eagle';
+    // Play owl screech upon swoop
+    owlSFX.currentTime = 0;
+    owlSFX.play().catch(()=>{});
     Object.assign(eagle.style, {
       position: 'fixed',
       left: '0px',   // use transform for movement
