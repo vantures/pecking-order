@@ -37,8 +37,8 @@ const ASSETS = [
   'assets/audio/flapping.mp3',
   'assets/audio/parrots2.mp3',
   'assets/audio/sparrow1.mp3',
-  'assets/audio/poof.mp3',
   'assets/audio/thud.mp3',
+  'assets/audio/woo.mp3',
 ];
 
 // On install, cache all known assets
@@ -76,8 +76,13 @@ self.addEventListener('fetch', event => {
         const fetchPromise = fetch(request)
           .then(networkResponse => {
             // Refresh cache with latest copy
-            if (networkResponse && networkResponse.ok) {
-              cache.put(request, networkResponse.clone());
+            if (
+              networkResponse &&
+              networkResponse.ok &&
+              networkResponse.status === 200 &&
+              !request.headers.has('range')
+            ) {
+              cache.put(request, networkResponse.clone()).catch(()=>{});
             }
             return networkResponse;
           })

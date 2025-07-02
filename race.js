@@ -26,6 +26,9 @@ const birdImages = [
   'assets/birds/great_indian_bustard.png',
 ];
 
+// Global race state flag used by ticker to know when race is active
+let raceStarted = false;
+
 // ───────────────────────────────────────────────────────────
 // DOM elements
 // ───────────────────────────────────────────────────────────
@@ -674,10 +677,6 @@ function dropDead(racer){
 
 // Spawn a small feather burst at a given screen coordinate
 function spawnFeathersAt(x,y){
-  // Play poof sound
-  poofSFX.currentTime = 0;
-  poofSFX.play().catch(()=>{});
-
   const COUNT = 18;
   for(let i=0;i<COUNT;i++){
      const img=document.createElement('img');
@@ -806,10 +805,6 @@ wooSFX.preload = 'auto';
 const screechSFX = new Audio('assets/audio/vicious_owl_screech.mp3');
 screechSFX.preload = 'auto';
 
-// Poof sound when a losing bird crashes
-const poofSFX = new Audio('assets/audio/poof.mp3');
-poofSFX.preload = 'auto';
-
 // Thud sound at ground impact
 const thudSFX = new Audio('assets/audio/thud.mp3');
 thudSFX.preload = 'auto';
@@ -845,7 +840,6 @@ async function preloadAssets(onProgress) {
     { type: 'audio', src: 'assets/audio/parrots2.mp3' },
     { type: 'audio', src: 'assets/audio/sparrow1.mp3' },
     { type: 'audio', src: 'assets/audio/vicious_owl_screech.mp3' },
-    { type: 'audio', src: 'assets/audio/poof.mp3' },
     { type: 'audio', src: 'assets/audio/thud.mp3' },
     { type: 'audio', src: 'assets/audio/woo.mp3' },
   ];
