@@ -298,7 +298,7 @@ function startRace(e) {
         raceStarted=true;
 
         // 20% chance the owl swoops in this race
-        if(Math.random() < 0.20) {
+        if(Math.random() < 0.90) {
            scheduleEagle();
         }
 
@@ -574,8 +574,8 @@ function shuffle(arr) {
 
 // Smooth speed adjustment: birds may gently speed up or slow down mid-race
 function maybeAdjustSpeed(tween){
-  // ~50% chance a bird will noticeably speed up or slow down mid-race
-  if(Math.random() < 0.5){
+  // ~60% chance a bird will noticeably speed up or slow down mid-race
+  if(Math.random() < 0.6){
      // Trigger somewhere in the first half of the race
      const delay = gsap.utils.random(1.5, 4);
 
