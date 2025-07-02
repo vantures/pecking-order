@@ -1,6 +1,6 @@
 // service-worker.js
 // Basic offline caching for Pecking Order
-const CACHE_NAME = 'pecking-order-v3';
+const CACHE_NAME = 'pecking-order-v4';
 const ASSETS = [
   '/',
   'index.html',
@@ -59,21 +59,27 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Cache-first strategy with network fallback
+// Stale-while-revalidate strategy: serve from cache, then update it in the background.
 self.addEventListener('fetch', event => {
   const { request } = event;
-  // Only handle GET requests over http/https
   if (request.method !== 'GET' || !request.url.startsWith(self.location.origin)) return;
 
   event.respondWith(
-    caches.match(request).then(cached => {
-      if (cached) return cached;
-      return fetch(request).then(response => {
-        // Clone & store in cache for future
-        const respClone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(request, respClone));
-        return response;
-      }).catch(() => cached);
-    })
+    caches.open(CACHE_NAME).then(cache =>
+      cache.match(request).then(cachedResponse => {
+        const fetchPromise = fetch(request)
+          .then(networkResponse => {
+            // Refresh cache with latest copy
+            if (networkResponse && networkResponse.ok) {
+              cache.put(request, networkResponse.clone());
+            }
+            return networkResponse;
+          })
+          .catch(() => cachedResponse); // fallback to cache on failure
+
+        // Return cached version immediately if present, else wait for network
+        return cachedResponse || fetchPromise;
+      })
+    )
   );
 }); 

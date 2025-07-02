@@ -20,6 +20,10 @@ const birdImages = [
   'assets/birds/california_condor.png',
   'assets/birds/baltimore_oriole.png',
   'assets/birds/kakapo.png',
+  'assets/birds/common_grackle.png',
+  'assets/birds/wood_duck.png',
+  'assets/birds/snow_bunting.png',
+  'assets/birds/great_indian_bustard.png',
 ];
 
 // ───────────────────────────────────────────────────────────
@@ -298,7 +302,7 @@ function startRace(e) {
         raceStarted=true;
 
         // 20% chance the owl swoops in this race
-        if(Math.random() < 0.90) {
+        if(Math.random() < 0.20) {
            scheduleEagle();
         }
 
@@ -379,6 +383,10 @@ function startRace(e) {
     gsap.set(eagle,{x:-250,y:-250});
     document.body.appendChild(eagle);
 
+    // Play screech sound as the owl dives
+    screechSFX.currentTime = 0;
+    screechSFX.play().catch(()=>{});
+
     // Calculate where to intercept the bird – position eagle so talons overlap the bird
     const rect = target.el.getBoundingClientRect();
     // Use fixed dimensions (image may not be loaded yet)
@@ -420,9 +428,11 @@ function startRace(e) {
     if(racer.el._sine)  racer.el._sine.pause();
     gsap.killTweensOf(racer.el);
 
-    // Feather burst for effect
+    // Thud + silent feather burst on owl grab
     const rect = racer.el.getBoundingClientRect();
-    spawnFeathersAt(rect.left + rect.width/2, rect.top + rect.height/2);
+    thudSFX.currentTime = 0;
+    thudSFX.play().catch(()=>{});
+    spawnFeathersSilent(rect.left + rect.width/2, rect.top + rect.height/2);
 
     // Fly off towards top-right corner carrying the bird
     const destX = window.innerWidth + 300;
@@ -502,6 +512,10 @@ function announceWinner(racer) {
   // Play celebration sound
   successSFX.currentTime = 0;
   successSFX.play().catch(()=>{});
+
+  // Play woo cheer simultaneously
+  wooSFX.currentTime = 0;
+  wooSFX.play().catch(()=>{});
 }
 
 function bringWinnerBird(el){
@@ -633,8 +647,10 @@ function dropDead(racer){
      gsap.to(img,{rotation:"-=180", duration:0.4, ease:"power1.in"});
   }
 
-  // Trigger feathers explosion at impact point (wall)
+  // Play thud and feathers at wall impact
   const rect = racer.el.getBoundingClientRect();
+  thudSFX.currentTime = 0;
+  thudSFX.play().catch(()=>{});
   spawnFeathersAt(rect.left + rect.width/2, rect.top + rect.height/2);
 
   // drop to bottom
@@ -662,6 +678,21 @@ function spawnFeathersAt(x,y){
   poofSFX.currentTime = 0;
   poofSFX.play().catch(()=>{});
 
+  const COUNT = 18;
+  for(let i=0;i<COUNT;i++){
+     const img=document.createElement('img');
+     img.src='assets/feather.png';
+     img.className='feather';
+     document.body.appendChild(img);
+     gsap.set(img,{left:x,top:y,xPercent:-50,yPercent:-50,scale:0.25,rotation:gsap.utils.random(-40,40),position:'fixed',pointerEvents:'none'});
+     const angle=Math.random()*Math.PI*2;
+     const dist=gsap.utils.random(80,180);
+     gsap.to(img,{x:Math.cos(angle)*dist,y:Math.sin(angle)*dist,rotation:gsap.utils.random(-360,360),opacity:0,duration:1.2,ease:'power2.out',onComplete:()=>img.remove()});
+  }
+}
+
+// Add a silent variant that omits the poof sound (used for owl grab)
+function spawnFeathersSilent(x,y){
   const COUNT = 18;
   for(let i=0;i<COUNT;i++){
      const img=document.createElement('img');
@@ -767,6 +798,14 @@ const sparrowSFX = new Audio('assets/audio/sparrow1.mp3');
 sparrowSFX.preload = 'auto';
 sparrowSFX.loop = true;
 
+// Woo cheer sound on victory
+const wooSFX = new Audio('assets/audio/woo.mp3');
+wooSFX.preload = 'auto';
+
+// Owl screech when predator swoops
+const screechSFX = new Audio('assets/audio/vicious_owl_screech.mp3');
+screechSFX.preload = 'auto';
+
 // Poof sound when a losing bird crashes
 const poofSFX = new Audio('assets/audio/poof.mp3');
 poofSFX.preload = 'auto';
@@ -805,8 +844,10 @@ async function preloadAssets(onProgress) {
     { type: 'audio', src: 'assets/audio/flapping.mp3' },
     { type: 'audio', src: 'assets/audio/parrots2.mp3' },
     { type: 'audio', src: 'assets/audio/sparrow1.mp3' },
+    { type: 'audio', src: 'assets/audio/vicious_owl_screech.mp3' },
     { type: 'audio', src: 'assets/audio/poof.mp3' },
     { type: 'audio', src: 'assets/audio/thud.mp3' },
+    { type: 'audio', src: 'assets/audio/woo.mp3' },
   ];
 
   const total = manifest.length;
