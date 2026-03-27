@@ -304,9 +304,12 @@ function startRace(e) {
         });
         raceStarted=true;
 
-        // 20% chance the owl swoops in this race
-        if(Math.random() < 0.20) {
-           scheduleEagle();
+        // 70% chance a predator event fires – owl OR crow mob, never both at once
+        const predatorRoll = Math.random();
+        if (predatorRoll < 0.35) {
+          scheduleEagle();
+        } else if (predatorRoll < 0.70) {
+          scheduleCrowMob();
         }
 
         // Start ambience loops after "Go!"
@@ -418,7 +421,14 @@ function startRace(e) {
       y: grabY,
       duration: 0.9,
       ease: 'power2.in',
-      onComplete: () => grabBird(target, eagle)
+      onComplete: () => {
+        grabBird(target, eagle);
+        // Schedule another swoop after 3–6 seconds if birds still racing
+        const remaining = racers.filter(r => !r.finished && !r.captured);
+        if (remaining.length > 0) {
+          gsap.delayedCall(gsap.utils.random(3, 6), launchEagle);
+        }
+      }
     });
   }
 
@@ -479,6 +489,168 @@ function startRace(e) {
 
     tl.to(eagleEl, { x:`+=${deltaEagleX}`, y:`+=${deltaEagleY}`, duration:1.4, ease:'power2.in' }, 0)
       .to(racer.el, { x:`+=${deltaBirdX}`,  y:`+=${deltaBirdY}`,  duration:1.4, ease:'power2.in' }, 0);
+  }
+
+  // ───────────────────────────────────────────────────────────
+  // Crow mob – 3 crows buzz a racer; contact slows them briefly
+  // ───────────────────────────────────────────────────────────
+  function scheduleCrowMob() {
+    const delay = gsap.utils.random(0.5, 1.5);
+    gsap.delayedCall(delay, launchCrowMob);
+  }
+
+  function launchCrowMob() {
+    const potentials = racers.filter(r => !r.finished && !r.captured);
+    if (!potentials.length) return;
+    const target = potentials[Math.floor(Math.random() * potentials.length)];
+
+    const NUM_CROWS = 3;
+    for (let i = 0; i < NUM_CROWS; i++) {
+      gsap.delayedCall(i * 0.4, () => spawnCrow(target, i));
+    }
+
+    // Schedule another mob after crows clear
+    gsap.delayedCall(NUM_CROWS * 0.4 + 2.5, () => {
+      const remaining = racers.filter(r => !r.finished && !r.captured);
+      if (remaining.length > 0) {
+        gsap.delayedCall(gsap.utils.random(4, 7), launchCrowMob);
+      }
+    });
+  }
+
+  function spawnCrow(target, index) {
+    if (target.finished || target.captured) return;
+
+    const crow = document.createElement('img');
+    crow.src = 'assets/birds/american-crow.png';
+    Object.assign(crow.style, {
+      position: 'fixed',
+      left: '0px',
+      top:  '0px',
+      width: '85px',
+      zIndex: 9998,
+      pointerEvents: 'none',
+    });
+    document.body.appendChild(crow);
+
+    // Each crow comes from a different direction
+    const starts = [
+      { x: -220, y: -180, scaleX:  1 },   // top-left
+      { x: -220, y: window.innerHeight + 100, scaleX: 1 },  // bottom-left
+      { x: window.innerWidth + 220, y: -180, scaleX: -1 },  // top-right (flipped)
+    ];
+    const start = starts[index % starts.length];
+    gsap.set(crow, { x: start.x, y: start.y, scaleX: start.scaleX });
+
+    // Each crow hovers at a slightly different offset around the target
+    const hoverOffsets = [
+      { x: -35, y: -25 },
+      { x:  20, y:  15 },
+      { x:  -5, y: -45 },
+    ];
+    const hover = hoverOffsets[index % hoverOffsets.length];
+
+    // Play crow caw
+    const sfx = new Audio('assets/audio/crow.mp3');
+    sfx.play().catch(() => {});
+
+    // Helper: get current position of target + this crow's offset
+    function targetPos() {
+      const r = target.el.getBoundingClientRect();
+      return {
+        x: r.left + r.width  / 2 - 65 + hover.x,
+        y: r.top  + r.height / 2 - 20 + hover.y,
+      };
+    }
+
+    // Fly the crow off-screen to the right
+    function flyOff() {
+      if (!document.body.contains(crow)) return;
+      gsap.to(crow, {
+        x: window.innerWidth + 200,
+        y: (Math.random() - 0.5) * window.innerHeight,
+        duration: 0.8,
+        ease: 'power2.in',
+        onComplete: () => crow.remove(),
+      });
+    }
+
+    // Recursive peck loop – wide sweeping arcs, then fast dive in to strike
+    function peckLoop() {
+      if (target.finished || target.captured || !document.body.contains(crow)) {
+        crow.remove();
+        return;
+      }
+
+      // Leave when bird is past 90% of the screen width
+      const bPos = target.el.getBoundingClientRect();
+      if (bPos.left >= window.innerWidth * 0.9) {
+        flyOff();
+        return;
+      }
+
+      // Swoop out to a wide random position around the bird
+      const angle = Math.random() * Math.PI * 2;
+      const dist  = gsap.utils.random(160, 280);
+      const center = targetPos();
+      const sweepX = center.x + Math.cos(angle) * dist;
+      const sweepY = center.y + Math.sin(angle) * dist * 0.55; // flatten arc vertically
+
+      gsap.to(crow, {
+        x: sweepX,
+        y: sweepY,
+        duration: gsap.utils.random(0.6, 1.0),
+        ease: 'power1.inOut',
+        onComplete: () => {
+          if (target.finished || target.captured || !document.body.contains(crow)) {
+            crow.remove();
+            return;
+          }
+
+          // Dart in fast to strike
+          const strike = targetPos();
+          gsap.to(crow, {
+            x: strike.x,
+            y: strike.y,
+            duration: gsap.utils.random(0.18, 0.3),
+            ease: 'power3.in',
+            onComplete: () => {
+              // Feathers + sounds every contact – use bird's actual viewport center
+              const bRect = target.el.getBoundingClientRect();
+              spawnCrowFeathers(bRect.left + bRect.width / 2, bRect.top + bRect.height / 2);
+              playCrowAttackSounds();
+
+              // 35% chance to slow the bird
+              if (Math.random() < 0.35 && !target.finished && !target.captured && target.el._tween) {
+                target.el._tween.timeScale(0.25);
+                gsap.delayedCall(0.9, () => {
+                  if (!target.finished && !target.captured && target.el._tween) {
+                    target.el._tween.timeScale(1);
+                  }
+                });
+              }
+
+              gsap.delayedCall(gsap.utils.random(0.05, 0.2), peckLoop);
+            },
+          });
+        },
+      });
+    }
+
+    // Fly in from off-screen then start pecking
+    const first = targetPos();
+    gsap.to(crow, {
+      x: first.x,
+      y: first.y,
+      duration: 1.0,
+      ease: 'power2.in',
+      onComplete: () => {
+        const bRect = target.el.getBoundingClientRect();
+        spawnCrowFeathers(bRect.left + bRect.width / 2, bRect.top + bRect.height / 2);
+        playCrowAttackSounds();
+        peckLoop();
+      },
+    });
   }
 }
 
@@ -673,6 +845,48 @@ function dropDead(racer){
       spawnFeathersAt(finalRect.left + finalRect.width/2, finalRect.top + finalRect.height/2);
     }
   });
+}
+
+// Two overlapping crow caws with a slight offset – sounds like a mob
+function playCrowAttackSounds() {
+  const s1 = new Audio('assets/audio/crow.mp3');
+  s1.volume = 0.75;
+  s1.play().catch(() => {});
+  setTimeout(() => {
+    const s2 = new Audio('assets/audio/crow.mp3');
+    s2.volume = 0.6;
+    s2.play().catch(() => {});
+  }, Math.random() * 120 + 60); // 60–180ms offset
+}
+
+// Dramatic feather burst for crow pecks
+function spawnCrowFeathers(x, y) {
+  const COUNT = 9;
+  for (let i = 0; i < COUNT; i++) {
+    const img = document.createElement('img');
+    img.src = 'assets/feather.png';
+    document.body.appendChild(img);
+    gsap.set(img, {
+      left: x, top: y,
+      xPercent: -50, yPercent: -50,
+      scale: gsap.utils.random(0.2, 0.35),
+      rotation: gsap.utils.random(-60, 60),
+      position: 'fixed',
+      pointerEvents: 'none',
+      zIndex: 10000,
+    });
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = gsap.utils.random(60, 160);
+    gsap.to(img, {
+      x: Math.cos(angle) * dist,
+      y: Math.sin(angle) * dist,
+      rotation: gsap.utils.random(-360, 360),
+      opacity: 0,
+      duration: gsap.utils.random(0.8, 1.4),
+      ease: 'power2.out',
+      onComplete: () => img.remove(),
+    });
+  }
 }
 
 // Spawn a small feather burst at a given screen coordinate
